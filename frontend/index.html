@@ -12,7 +12,10 @@
     <script src='https://d3js.org/d3.v7.min.js'></script>
     <script src='https://unpkg.com/dc@4.2.7/dist/dc.js'></script>
    
-    <script type='module' src='js/main.js'></script>
+    <script type="module">
+        import { Survey } from "./js/main.js";
+        const survey = new Survey();
+    </script>
     
     <link href='https://cdn.jsdelivr.net/npm/dc@4.2.7/dist/style/dc.min.css' rel='stylesheet' type='text/css'>
     
@@ -20,6 +23,13 @@
 </head>
 
 <body>
+    <div id="title">Survey Query</div>
+    <div id="buttons"></div>
+    <div id="upload"></div>
+    <div id="filters"></div>
+    <div id="chart-1"></div>
+    <div id="chart-2"></div>
+    <div id="list"></div>
 </body>
 
 </html>

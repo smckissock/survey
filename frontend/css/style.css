@@ -1,0 +1,56 @@
+:root {
+    --title-height: 30px;  
+    --button-height: 30px;  
+    --chart-1-width: 200px;
+    --chart-2-width: 200px;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    
+    display: grid;
+    grid-template-areas:
+        "title                  title                      upload     "
+        "buttons                buttons                    filters    "
+        "chart-1                chart-2                    list       ";
+    grid-template-columns: var(--chart-1-width) var(--chart-2-width) 1fr;
+    grid-template-rows: var(--title-height) var(--button-height) 1fr;
+    gap: 10px 20px;
+    margin: 3px;
+    height: 100vh; 
+    width: calc(100vw - 1.1rem);
+    overflow: hidden;
+}
+
+
+#title {
+    grid-area: title;  
+    font-size: 30px;
+    font-weight: 700; 
+}
+
+#upload {
+    grid-area: upload;
+}
+
+#buttons {
+    grid-area: buttons;
+}
+
+#filters {
+    grid-area: filters;
+}
+
+#chart-1 {
+    grid-area: chart-1;
+}
+
+#chart-2 {
+    grid-area: chart-2;
+}
+
+#list {
+    grid-area: list;
+    overflow: auto;
+}
+
