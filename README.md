@@ -1,5 +1,7 @@
 # Survey Data App
 
+![Survey App Screenshot](images/screenshot.jpg)
+
 #### 1. Backend API
 - SqlModel for an ORM because it works well with FastApi
 - SQLite for ease of configuration, but usually I would use postgresql
