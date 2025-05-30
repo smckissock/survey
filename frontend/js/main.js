@@ -10,8 +10,14 @@ export class Survey {
         const questions = await this.getQuestions();
         this.createQuestionButtons(questions);
 
+        document.getElementById("clear-filters").addEventListener("click", () => {
+            dc.filterAll();
+            dc.redrawAll();
+            this.showSelected()
+        });
+
         this.question = questions[0];
-        this.getResponses(this.question);
+        this.switchQuestion(this.question);
     }
 
     async getQuestions() {
@@ -26,7 +32,8 @@ export class Survey {
         }
     }
 
-    async getResponses(question) {
+    async switchQuestion(question) {
+        this.question = question;
         try {
             const response = await fetch(`/questions/${encodeURIComponent(question)}`);
             if (!response.ok) 
@@ -36,21 +43,20 @@ export class Survey {
             this.responses.forEach(d => {
                 d.count = 1;
             })    
-            this.writeReponses(this.responses)
-            
             this.facts = crossfilter(this.responses);
             
-            new RowChart(this.facts, "state", 200, this.showSelected);
-            new RowChart(this.facts, "gender", 200, this.showSelected);
-            new RowChart(this.facts, "education_level", 200, this.showSelected);
-            new RowChart(this.facts, "sentiment_label", 200, this.showSelected);
-           
-            new RowChart(this.facts, "income", 200, this.showSelected); 
-            new RowChart(this.facts, "age", 200, this.showSelected);
-            new RowChart(this.facts, "city", 200, this.showSelected);
+            const config = {
+                facts: this.facts,
+                width: 200,
+                updateFunction: this.showSelected.bind(this)
+            };
+            const chartFields = ["state", "gender", "education_level", "sentiment_label", "income", "age", "city"];
+            chartFields.forEach(field => {
+                new RowChart(field, config);
+            });
 
             dc.renderAll();
-            
+            this.showSelected()            
         } catch (error) {
             console.error(`Failed to fetch responses for ${question}:`, error);
             return [];
@@ -58,11 +64,31 @@ export class Survey {
     }
 
     showSelected() {
-        alert("Show Selected");
+        let filters = [];
+        
+        dc.chartRegistry.list().forEach(chart => {
+            chart.filters().forEach(filter => filters.push(filter));
+        });
+
+        const clearButton = document.getElementById("clear-filters");
+        clearButton.style.display = filters.length > 0 ? "block" : "none";
+
+        const responses = this.facts.allFiltered().length;
+        d3.select("#filters")
+            .html(`
+                <span>Question: ${this.question}</span> &nbsp;
+                <span>${responses} responses</span> &nbsp;
+                <span>${filters.join(', ')}</span>
+            `);
+     
+        this.writeResponses(this.facts.allFiltered());
     }
 
-    writeReponses(responses) {            
-        const headers = Object.keys(responses[0]);
+    writeResponses(responses) {            
+        const headers = Object.keys(responses[0])
+            .filter(key => key !== 'count')
+            .sort((a, b) => a === this.question ? 1 : b === this.question ? -1 : 0);
+
         let html = `<table class="data-table"><thead><tr>`;
         html += headers.map(key => `<th>${key}</th>`).join("");
         html += `</tr></thead><tbody>`;
@@ -83,7 +109,7 @@ export class Survey {
             const button = document.createElement("button");
             button.textContent = name;
             button.className = "question-button";
-            button.addEventListener("click", () => this.getResponses(name));
+            button.addEventListener("click", () => this.switchQuestion(name));
             container.appendChild(button);
         });
     }
