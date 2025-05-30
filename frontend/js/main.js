@@ -20,6 +20,7 @@ export class Survey {
         this.switchQuestion(this.question);
     }
 
+    // Get a list of questions (strings) from the server 
     async getQuestions() {
         try {
             const response = await fetch("/questions/list");
@@ -32,6 +33,7 @@ export class Survey {
         }
     }
 
+    // On start up or when a question button is clicked, get the responses for the question and display them
     async switchQuestion(question) {
         this.question = question;
         try {
@@ -63,13 +65,14 @@ export class Survey {
         }
     }
 
+    // Show current question, filters, and # of responses. Also list the filtred responses
     showSelected() {
-        let filters = [];
-        
+        let filters = [];        
         dc.chartRegistry.list().forEach(chart => {
             chart.filters().forEach(filter => filters.push(filter));
         });
 
+        // Hide clear filters button if no filters
         const clearButton = document.getElementById("clear-filters");
         clearButton.style.display = filters.length > 0 ? "block" : "none";
 
@@ -84,6 +87,7 @@ export class Survey {
         this.writeResponses(this.facts.allFiltered());
     }
 
+    // Write a simple table of the filtered responses    
     writeResponses(responses) {            
         const headers = Object.keys(responses[0])
             .filter(key => key !== 'count')
@@ -100,7 +104,7 @@ export class Survey {
         document.getElementById("list").innerHTML = html
     }
 
-
+    // Make a button for each question, with a click handler to switch the question
     createQuestionButtons(questionNames) {
         const container = document.getElementById("buttons");
         container.innerHTML = "";
