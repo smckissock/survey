@@ -1,5 +1,5 @@
 :root {
-    --title-height: 30px;  
+    --title-height: 40px;  
     --button-height: 30px;  
     --chart-1-width: 200px;
     --chart-2-width: 200px;
@@ -10,7 +10,7 @@ body {
     
     display: grid;
     grid-template-areas:
-        "title                  title                      upload     "
+        "title                  title                      title     "
         "buttons                buttons                    filters    "
         "chart-1                chart-2                    list       ";
     grid-template-columns: var(--chart-1-width) var(--chart-2-width) 1fr;

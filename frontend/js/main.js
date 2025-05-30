@@ -1,6 +1,9 @@
+
+import {RowChart} from "./rowChart.js"; 
+
 export class Survey {
     constructor() {
-        this.init();  // async setup
+        this.init(); 
     }
 
     async init() {
@@ -29,15 +32,33 @@ export class Survey {
             if (!response.ok) 
                 throw new Error(`Server error: ${response.status}`);
             
-            const responses = await response.json();
+            this.responses = await response.json();
+            this.responses.forEach(d => {
+                d.count = 1;
+            })    
+            this.writeReponses(this.responses)
+            
+            this.facts = crossfilter(this.responses);
+            
+            new RowChart(this.facts, "state", 200, this.showSelected);
+            new RowChart(this.facts, "gender", 200, this.showSelected);
+            new RowChart(this.facts, "education_level", 200, this.showSelected);
+            new RowChart(this.facts, "sentiment_label", 200, this.showSelected);
+           
+            new RowChart(this.facts, "income", 200, this.showSelected); 
+            new RowChart(this.facts, "age", 200, this.showSelected);
+            new RowChart(this.facts, "city", 200, this.showSelected);
 
-            this.writeReponses(responses)
-            // Do Crosfilter stuff
+            dc.renderAll();
             
         } catch (error) {
             console.error(`Failed to fetch responses for ${question}:`, error);
             return [];
         }
+    }
+
+    showSelected() {
+        alert("Show Selected");
     }
 
     writeReponses(responses) {            
@@ -51,7 +72,6 @@ export class Survey {
 
         html += `</tbody></table>`;
         document.getElementById("list").innerHTML = html
-
     }
 
 
