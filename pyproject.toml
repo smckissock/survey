@@ -1,0 +1,27 @@
+[project]
+name = "survey-app"
+version = "0.1.0"
+description = "Web app with FastAPI and D3.js"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "sqlmodel",
+    "uvicorn[standard]",
+    "pandas",
+    "python-dotenv",
+    "python-multipart"
+]
+
+[project.optional-dependencies]
+dev = ["black", "pytest", "mypy"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
