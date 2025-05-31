@@ -60,3 +60,21 @@ body {
 td {
     font-size: 12px;
 }
+
+#buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap; /* allows buttons to wrap if needed */
+} 
+
+.question-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.question-button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}

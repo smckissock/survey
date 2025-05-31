@@ -57,6 +57,7 @@ export class Survey {
                 new RowChart(field, config);
             });
 
+            dc.filterAll();
             dc.renderAll();
             this.showSelected()            
         } catch (error) {
@@ -116,5 +117,31 @@ export class Survey {
             button.addEventListener("click", () => this.switchQuestion(name));
             container.appendChild(button);
         });
+    }
+
+    createQuestionButtons(questionNames) {
+        const container = document.getElementById("buttons");
+        container.innerHTML = "";
+
+        const highlightButton = (selectedName) => {
+            d3.selectAll('.question-button')
+                .classed('active', function() {
+                    return d3.select(this).text() === selectedName;
+                });
+        };
+
+        questionNames.forEach(name => {
+            const button = document.createElement("button");
+            button.textContent = name;
+            button.className = "question-button";
+            button.addEventListener("click", () => {
+                this.switchQuestion(name);
+                highlightButton(name);
+            });
+            container.appendChild(button);
+        });
+
+        // Highlight first button on startup
+        highlightButton(questionNames[0]);
     }
 }
