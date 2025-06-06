@@ -44,7 +44,7 @@ export class Survey {
             this.responses = await response.json();
             this.responses.forEach(d => {
                 d.count = 1;
-            })    
+            })
             this.facts = crossfilter(this.responses);
             
             const config = {

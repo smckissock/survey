@@ -28,7 +28,7 @@
 
 ```bash
 python -m venv venv
-source venv/bin/activate (Windows: source venv/bin/activate)
+source venv/bin/activate (Windows: venv/Scripts/activate)
 ```
 
 ### Install Dependencies
@@ -50,7 +50,7 @@ python scripts/setup_db.py
 
 ### Start Server
 ```bash
-uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn backend.api:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Access App
