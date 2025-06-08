@@ -1,6 +1,7 @@
 import {Map} from './map.js'; 
 import {RowChart} from "./rowChart.js"; 
 import {ScatterPlot} from "./scatterPlot.js"; 
+import {BoxPlot} from "./boxPlot.js";
 
 
 export class Survey {
@@ -56,13 +57,24 @@ export class Survey {
                 facts: dc.facts,
                 width: 400,
                 height: 300,
-                updateFunction: this.showSelected
+                updateFunction: this.showSelected.bind(this)
             };
-            const chartFields = ["age"];
-            chartFields.forEach(field => {
-                new ScatterPlot(field, this.question, field, config);
-            });
+    
+            new ScatterPlot('age', 'q1_rating', 'Age vs Q1 Rating', config);
+            new ScatterPlot('income_value', 'q1_rating', 'Income vs Q1 Rating', config);
+            new ScatterPlot('education_level_value', 'q1_rating', 'Education vs Q1 Rating', config);
+        };
+
+        const addBoxPlots = () => {     
+            const config = {
+                facts: dc.facts,
+                width: 400,
+                updateFunction: this.showSelected.bind(this)
+            };
+            new BoxPlot('gender', config);
+            new BoxPlot('state', config);
         }
+
 
         this.question = question;
         try {
@@ -73,11 +85,28 @@ export class Survey {
             this.responses = await response.json();
             this.responses.forEach(d => {
                 d.count = 1;
-            })            
+                // Add numeric mappings for categorical data
+                d.income_value = {
+                    "Low": 1,
+                    "Lower-Middle": 2, 
+                    "Upper-Middle": 3,
+                    "High": 4
+                }[d.income];
+        
+                d.education_level_value = {
+                    "High School": 1,
+                    "Some College": 2,
+                    "Associate Degree": 3,
+                    "Bachelor's Degree": 4,
+                    "Master's Degree": 5,
+                    "Doctorate": 6
+                }[d.education_level];
+            })
             dc.facts = crossfilter(this.responses);
             
             addRowCharts();
             addScatterPlots();
+            addBoxPlots();
             dc.map = new Map(d3.select('#map'), this.responses, dc.facts.dimension(dc.pluck('state')), this.showSelected);
 
             dc.renderAll();
