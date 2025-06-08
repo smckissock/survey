@@ -1,8 +1,7 @@
 
-// 
+// Wrapper of dc.js rowChart
 export class RowChart {
     constructor(attribute, config) {
-    //constructor(facts, attribute, width, updateFunction) {
         this.dim = config.facts.dimension(dc.pluck(attribute));
         this.group = this.dim.group().reduceSum(dc.pluck("count"));
         

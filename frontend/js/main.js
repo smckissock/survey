@@ -1,4 +1,5 @@
 
+import {Map} from './map.js'; 
 import {RowChart} from "./rowChart.js"; 
 
 export class Survey {
@@ -45,17 +46,23 @@ export class Survey {
             this.responses.forEach(d => {
                 d.count = 1;
             })
-            this.facts = crossfilter(this.responses);
+            //this.facts = crossfilter(this.responses);
+            //dc.facts = this.facts;
+            dc.facts = crossfilter(this.responses);
             
             const config = {
-                facts: this.facts,
+                facts: dc.facts,
                 width: 200,
                 updateFunction: this.showSelected.bind(this)
             };
-            const chartFields = ["state", "gender", "education_level", "sentiment_label", "income", "age", "city"];
+            //const chartFields = ["state", "gender", "education_level", "sentiment_label", "income", "age", "city"];
+            const chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
             chartFields.forEach(field => {
                 new RowChart(field, config);
             });
+
+
+            dc.map = new Map(d3.select('#map'), this.responses, dc.facts.dimension(dc.pluck('state')), this.showSelected);
 
             dc.filterAll();
             dc.renderAll();
@@ -67,7 +74,7 @@ export class Survey {
     }
 
     // Show current question, filters, and # of responses. Also list the filtred responses
-    showSelected() {
+    showSelected = () => {
         let filters = [];        
         dc.chartRegistry.list().forEach(chart => {
             chart.filters().forEach(filter => filters.push(filter));
@@ -77,7 +84,7 @@ export class Survey {
         const clearButton = document.getElementById("clear-filters");
         clearButton.style.display = filters.length > 0 ? "block" : "none";
 
-        const responses = this.facts.allFiltered().length;
+        const responses = dc.facts.allFiltered().length;
         d3.select("#filters")
             .html(`
                 <span>Question: ${this.question}</span> &nbsp;
@@ -85,7 +92,8 @@ export class Survey {
                 <span>${filters.join(', ')}</span>
             `);
      
-        this.writeResponses(this.facts.allFiltered());
+        dc.map.update();    
+        this.writeResponses(dc.facts.allFiltered());
     }
 
     // Write a simple table of the filtered responses    

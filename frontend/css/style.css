@@ -1,6 +1,7 @@
 :root {
     --title-height: 40px;  
     --button-height: 30px;  
+    --map-height: 320px;  
     --chart-1-width: 200px;
     --chart-2-width: 200px;
 }
@@ -10,8 +11,9 @@ body {
     
     display: grid;
     grid-template-areas:
-        "title                  title                      clear-filters     "
-        "buttons                buttons                    filters    "
+        "title                  title                      filters     "
+        "buttons                buttons                    clear-filters    "
+        "map                    map                        list       "
         "chart-1                chart-2                    list       ";
     grid-template-columns: var(--chart-1-width) var(--chart-2-width) 1fr;
     grid-template-rows: var(--title-height) var(--button-height) 1fr;
@@ -34,6 +36,10 @@ body {
 
 #buttons {
     grid-area: buttons;
+}
+
+#map {
+    grid-area: map;
 }
 
 #filters {
@@ -77,4 +83,14 @@ td {
     background-color: #007bff;
     color: white;
     border-color: #0056b3;
+}
+
+.response-count {
+    font-size: 22px; 
+    font-weight: 600; 
+}
+
+.state-response-count {
+    font-size: 12px; 
+    font-weight: 500; 
 }
