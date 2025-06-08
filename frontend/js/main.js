@@ -1,6 +1,7 @@
-
 import {Map} from './map.js'; 
 import {RowChart} from "./rowChart.js"; 
+import {ScatterPlot} from "./scatterPlot.js"; 
+
 
 export class Survey {
     constructor() {
@@ -10,6 +11,7 @@ export class Survey {
     async init() {
         const questions = await this.getQuestions();
         this.createQuestionButtons(questions);
+        this.createOutputButtons(['Charts', "Responses"]);
 
         document.getElementById("clear-filters").addEventListener("click", () => {
             dc.filterAll();
@@ -36,6 +38,32 @@ export class Survey {
 
     // On start up or when a question button is clicked, get the responses for the question and display them
     async switchQuestion(question) {
+
+        const addRowCharts = () => {
+            const config = {
+                facts: dc.facts,
+                width: 200,
+                updateFunction: this.showSelected
+            };
+            const chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
+            chartFields.forEach(field => {
+                new RowChart(field, config);
+            });
+        }
+
+        const addScatterPlots = () => {
+            const config = {
+                facts: dc.facts,
+                width: 400,
+                height: 300,
+                updateFunction: this.showSelected
+            };
+            const chartFields = ["age"];
+            chartFields.forEach(field => {
+                new ScatterPlot(field, this.question, field, config);
+            });
+        }
+
         this.question = question;
         try {
             const response = await fetch(`/questions/${encodeURIComponent(question)}`);
@@ -45,28 +73,16 @@ export class Survey {
             this.responses = await response.json();
             this.responses.forEach(d => {
                 d.count = 1;
-            })
-            //this.facts = crossfilter(this.responses);
-            //dc.facts = this.facts;
+            })            
             dc.facts = crossfilter(this.responses);
             
-            const config = {
-                facts: dc.facts,
-                width: 200,
-                updateFunction: this.showSelected.bind(this)
-            };
-            //const chartFields = ["state", "gender", "education_level", "sentiment_label", "income", "age", "city"];
-            const chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
-            chartFields.forEach(field => {
-                new RowChart(field, config);
-            });
-
-
+            addRowCharts();
+            addScatterPlots();
             dc.map = new Map(d3.select('#map'), this.responses, dc.facts.dimension(dc.pluck('state')), this.showSelected);
 
-            dc.filterAll();
             dc.renderAll();
-            this.showSelected()            
+            dc.filterAll();
+            this.showSelected();           
         } catch (error) {
             console.error(`Failed to fetch responses for ${question}:`, error);
             return [];
@@ -75,6 +91,8 @@ export class Survey {
 
     // Show current question, filters, and # of responses. Also list the filtred responses
     showSelected = () => {
+        if (!this.responses || !dc.facts) return;
+        
         let filters = [];        
         dc.chartRegistry.list().forEach(chart => {
             chart.filters().forEach(filter => filters.push(filter));
@@ -91,8 +109,9 @@ export class Survey {
                 <span>${responses} responses</span> &nbsp;
                 <span>${filters.join(', ')}</span>
             `);
-     
+
         dc.map.update();    
+        dc.redrawAll();
         this.writeResponses(dc.facts.allFiltered());
     }
 
@@ -110,27 +129,13 @@ export class Survey {
         }).join("");
 
         html += `</tbody></table>`;
-        document.getElementById("list").innerHTML = html
+        document.getElementById("responses").innerHTML = html
     }
 
     // Make a button for each question, with a click handler to switch the question
     createQuestionButtons(questionNames) {
         const container = document.getElementById("buttons");
         container.innerHTML = "";
-
-        questionNames.forEach(name => {
-            const button = document.createElement("button");
-            button.textContent = name;
-            button.className = "question-button";
-            button.addEventListener("click", () => this.switchQuestion(name));
-            container.appendChild(button);
-        });
-    }
-
-    createQuestionButtons(questionNames) {
-        const container = document.getElementById("buttons");
-        container.innerHTML = "";
-
         const highlightButton = (selectedName) => {
             d3.selectAll('.question-button')
                 .classed('active', function() {
@@ -151,5 +156,46 @@ export class Survey {
 
         // Highlight first button on startup
         highlightButton(questionNames[0]);
+    }
+
+
+    // Make a button for each output tab, with a click handler to switch the div
+    createOutputButtons(outputNames) {
+        const container = document.getElementById("output-buttons");
+        container.innerHTML = "";
+
+        const highlightButton = (selectedName) => {
+            d3.selectAll('.question-button')
+                .classed('active', function() {
+                    return d3.select(this).text() === selectedName;
+                });
+        };
+
+        outputNames.forEach(name => {
+            const button = document.createElement("button");
+            button.textContent = name;
+            button.className = "tab-button";
+            button.addEventListener("click", () => {
+                this.switchOutput(name);
+                highlightButton(name);
+            });
+            container.appendChild(button);
+        });
+
+        // Select first tab on startup
+        highlightButton(outputNames[0]);
+        this.switchOutput(outputNames[0]);
+    }
+
+    switchOutput(output) {
+        // Hide all tab content
+        document.querySelectorAll('#tab-content > div').forEach(content => {
+            content.classList.add('hidden');
+        });
+    
+        // Show the selected tab content
+        const targetContent = document.getElementById(output.toLowerCase());
+        if (targetContent) 
+            targetContent.classList.remove('hidden');
     }
 }

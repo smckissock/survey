@@ -11,12 +11,12 @@ body {
     
     display: grid;
     grid-template-areas:
-        "title                  title                      filters     "
-        "buttons                buttons                    clear-filters    "
-        "map                    map                        list       "
-        "chart-1                chart-2                    list       ";
+        "title                  title                      filters    "
+        "buttons                buttons                    output-buttons"
+        "map                    map                        tab-content"
+        "chart-1                chart-2                    tab-content";
     grid-template-columns: var(--chart-1-width) var(--chart-2-width) 1fr;
-    grid-template-rows: var(--title-height) var(--button-height) 1fr;
+    grid-template-rows: var(--title-height) var(--button-height) var(--map-height) 1fr;
     gap: 10px 20px;
     margin: 3px;
     height: 100vh; 
@@ -50,12 +50,16 @@ body {
     grid-area: chart-1;   
 }
 
+#output-buttons {
+    grid-area: output-buttons;
+}
+
 #chart-2 {
     grid-area: chart-2;
 }
 
-#list {
-    grid-area: list;    
+#tab-content {
+    grid-area: tab-content;    
 }
 
 
@@ -85,6 +89,57 @@ td {
     border-color: #0056b3;
 }
 
+.tab-buttons {
+    display: flex;
+    border-bottom: 2px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    padding: 6px 24px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    color: #050c17;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+    top: 2px; /* Overlaps the container border */
+}
+
+.tab-button:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+.tab-button.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    background-color: white;
+}
+
+.tab-content {
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+
+#charts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px; 
+}
+
 .response-count {
     font-size: 22px; 
     font-weight: 600; 
@@ -93,4 +148,12 @@ td {
 .state-response-count {
     font-size: 12px; 
     font-weight: 500; 
+}
+
+.dc-chart {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.5;
 }

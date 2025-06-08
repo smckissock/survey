@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html>
@@ -17,8 +16,7 @@
         const survey = new Survey();
     </script>
     
-    <link href='https://cdn.jsdelivr.net/npm/dc@4.2.7/dist/style/dc.min.css' rel='stylesheet' type='text/css'>
-    
+    <link href='https://cdn.jsdelivr.net/npm/dc@4.2.7/dist/style/dc.min.css' rel='stylesheet' type='text/css'>    
     <link href='css/style.css' rel='stylesheet' type='text/css'>
 </head>
 
@@ -27,6 +25,18 @@
     <div id="clear-filters"><button>Clear Filters</button></div>
     <div id="buttons"></div>
     <div id="filters"></div>
+
+    <div id="output-buttons" class="tab-container"></div>
+
+    <div id="tab-content">
+        <div id="responses"></div>
+        <div id="charts">
+             <div id="age-plot"></div>
+             <div id="income-plot"></div>
+             <div id="education-plot"></div>
+        </div>
+    </div>
+
     <div id="map"></div>
     <div id="chart-1">
         <div id ="gender">Gender</div>
@@ -38,7 +48,6 @@
         <div id ="sentiment_label">Sentiment</div>
         <div id ="age">Age</div>
     </div>
-    <div id="list"></div>
 </body>
 
 </html>
