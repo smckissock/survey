@@ -1,4 +1,4 @@
-import {Map} from './map.js'; 
+import {Map} from "./map.js"; 
 import {RowChart} from "./rowChart.js"; 
 import {ScatterPlot} from "./scatterPlot.js"; 
 import {BoxPlot} from "./boxPlot.js";
@@ -12,7 +12,7 @@ export class Survey {
     async init() {
         const questions = ["q1_rating", "q2_rating", "q3_open", "q4_rating", "q5_open"];
         this.createQuestionButtons(questions);
-        this.createOutputButtons(['Charts', "Responses"]);
+        this.createOutputButtons(["Charts", "Responses"]);
 
         document.getElementById("clear-filters").addEventListener("click", () => {
             dc.filterAll();
@@ -26,6 +26,7 @@ export class Survey {
 
     // On start up or when a question button is clicked, get the responses for the question and display them
     async switchQuestion(question) {
+        this.question = question;
 
         const addRowCharts = () => {
             const config = {
@@ -47,9 +48,9 @@ export class Survey {
                 updateFunction: this.showSelected.bind(this)
             };
     
-            new ScatterPlot('age', this.question, `Age vs ${this.question}`, config);
-            new ScatterPlot('income_value', this.question, `Income vs ${this.question}`, config);
-            //new ScatterPlot('education_level_value', this.question, `Education Level vs ${this.question}`, config);
+            new ScatterPlot("age", this.question, `Age vs ${this.question}`, config);
+            new ScatterPlot("income_value", this.question, `Income vs ${this.question}`, config);
+            //new ScatterPlot("education_level_value", this.question, `Education Level vs ${this.question}`, config);
         };
 
         const addBoxPlots = () => {     
@@ -58,12 +59,13 @@ export class Survey {
                 width: 400,
                 updateFunction: this.showSelected.bind(this)
             };
-            new BoxPlot('gender', this.question, `Gender vs ${this.question}`, config);
-            new BoxPlot('state', this.question, `State vs ${this.question}`, config);
-        }
-
-
-        this.question = question;
+            new BoxPlot("gender", this.question, `Gender vs ${this.question}`, config);
+            new BoxPlot("state", this.question, `State vs ${this.question}`, config);
+        }        
+        
+        this.setLoading(true);
+        dc.chartRegistry.clear();
+        d3.selectAll(".dc-chart").html("");
         try {
             if (!dc.facts) {
                 this.responses = await d3.csv("/data/us_ai_survey_unique_50.csv");
@@ -89,9 +91,9 @@ export class Survey {
             }
                         
             addRowCharts();
-            dc.map = new Map(d3.select('#map'), this.responses, dc.facts.dimension(dc.pluck('state')), this.showSelected);
+            dc.map = new Map(d3.select("#map"), this.responses, dc.facts.dimension(dc.pluck("state")), this.showSelected);
 
-            const openQuestion = this.question.includes('open');
+            const openQuestion = this.question.includes("open");
             if (!openQuestion) {
                 addScatterPlots();
                 addBoxPlots();
@@ -100,15 +102,17 @@ export class Survey {
                 this.switchOutput("Responses");
             }
 
-            // Charts don't make sense for open questions
-            d3.select('#Charts')
-                .style('display', !openQuestion ? 'inline-block' : 'none');
+            // Charts don"t make sense for open questions
+            d3.select("#Charts")
+                .style("display", !openQuestion ? "inline-block" : "none");
             
             dc.renderAll();
             dc.filterAll();
-            this.showSelected();           
+            this.showSelected();
+            this.setLoading(false)           
         } catch (error) {
             console.error(`Error in SwitchQuestion: ${question}:`, error);
+            this.setLoading(false)
             return [];  
         }
     }
@@ -135,7 +139,7 @@ export class Survey {
             .html(`
                 <span>Question: ${this.question}</span> &nbsp;
                 <span>${responses} responses</span> &nbsp;
-                <span>${filters.join(', ')}</span>
+                <span>${filters.join(", ")}</span>
             `);
 
         dc.map.update();    
@@ -146,7 +150,7 @@ export class Survey {
     // Write a simple table of the filtered responses    
     writeResponses(responses) {            
         const headers = Object.keys(responses[0])
-            .filter(key => key !== 'count')
+            .filter(key => key !== "count")
             .sort((a, b) => a === this.question ? 1 : b === this.question ? -1 : 0);
 
         let html = `<table class="data-table"><thead><tr>`;
@@ -165,8 +169,8 @@ export class Survey {
         const container = document.getElementById("buttons");
         container.innerHTML = "";
         const highlightButton = (selectedName) => {
-            d3.selectAll('.question-button')
-                .classed('active', function() {
+            d3.selectAll(".question-button")
+                .classed("active", function() {
                     return d3.select(this).text() === selectedName;
                 });
         };
@@ -181,8 +185,6 @@ export class Survey {
             });
             container.appendChild(button);
         });
-
-        // Highlight first button on startup
         highlightButton(questionNames[0]);
     }
 
@@ -193,8 +195,8 @@ export class Survey {
         container.innerHTML = "";
 
         const highlightButton = (selectedName) => {
-            d3.selectAll('.tab-button')
-                .classed('active', function() {
+            d3.selectAll(".tab-button")
+                .classed("active", function() {
                     return d3.select(this).text() === selectedName;
             });
         };
@@ -218,13 +220,17 @@ export class Survey {
 
     switchOutput(output) {
         // Hide all tab content
-        document.querySelectorAll('#tab-content > div').forEach(content => {
-            content.classList.add('hidden');
+        document.querySelectorAll("#tab-content > div").forEach(content => {
+            content.classList.add("hidden");
         });
     
         // Show the selected tab content
         const targetContent = document.getElementById(output.toLowerCase());
         if (targetContent) 
-            targetContent.classList.remove('hidden');
+            targetContent.classList.remove("hidden");
+    }
+
+    setLoading(isLoading) {
+        d3.select("#loading-overlay").classed("show", isLoading);
     }
 }
