@@ -1,4 +1,4 @@
-// Wrapper for dc.js ScatterPlot
+// Wrapper for dc.js ScatterPlot. Adds a regression line and R Squared.
 export class ScatterPlot {
     constructor(xAttribute, yAttribute, title, config) {
         this.xAttribute = xAttribute;
@@ -57,6 +57,7 @@ export class ScatterPlot {
 
     overrideXAxisLabels() {
         const getLabelOverrides = (attribute) => {
+            // Ugh!
             if (attribute === "income_value") {
                 return {
                     "1.0": "Low",
@@ -67,9 +68,9 @@ export class ScatterPlot {
             }
             if (attribute === "education_level_value") {
                 return {
-                    "1.0": "High School",
+                    "1.0": "High Sch.",
                     "2.0": "Some College",
-                    "3.0": "Assoc.",
+                    "3.0": "Associate",
                     "4.0": "BA",
                     "5.0": "MA",
                     "6.0": "PhD"
@@ -91,41 +92,78 @@ export class ScatterPlot {
     }
 
     drawRegressionLine() {
-        const { xValues, yValues } = this;
-        if (!xValues.length || !yValues.length) return;
 
-        const { slope, intercept } = (() => {
+        function RSquared(xValues, yValues, slope, intercept) {
+            const yMean = d3.mean(yValues);
+            const ssTot = d3.sum(yValues.map(y => Math.pow(y - yMean, 2)));
+            const ssRes = d3.sum(xValues.map((x, i) => {
+                const predicted = slope * x + intercept;
+                return Math.pow(yValues[i] - predicted, 2);
+            }));
+            return 1 - ssRes / ssTot;
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        this.chart.on('pretransition.trendline', debounce(chart => {
+            const data = this.dim.top(Infinity);
+            const xValues = data.map(d => +d[this.xAttribute]);
+            const yValues = data.map(d => +d[this.yAttribute]);
+
+            if (!xValues.length || !yValues.length) return;
+
+            // Compute linear regression
             const xMean = d3.mean(xValues);
             const yMean = d3.mean(yValues);
             const covariance = d3.sum(xValues.map((x, i) => (x - xMean) * (yValues[i] - yMean)));
             const variance = d3.sum(xValues.map(x => Math.pow(x - xMean, 2)));
             const slope = covariance / variance;
             const intercept = yMean - slope * xMean;
-            return { slope, intercept };
-        })();
+            const r2 = RSquared(xValues, yValues, slope, intercept);
 
-        this.chart.on('renderlet.trendline', chart => {
-            const svg = d3.select(`${this.id} svg`);
-            svg.selectAll('.trendline').remove();
-
-            const innerG = svg.select('g.chart-body');
             const xScale = chart.x();
             const yScale = chart.y();
-
             const xMin = xScale.domain()[0];
             const xMax = xScale.domain()[1];
             const yMin = slope * xMin + intercept;
             const yMax = slope * xMax + intercept;
 
-            innerG.append("line")
+            const svg = d3.select(`${this.id} svg`);
+            const innerG = svg.select('g.chart-body');
+
+            const line = innerG.selectAll(".trendline").data([1]);
+            line.enter()
+                .append("line")
                 .attr("class", "trendline")
-                .attr("x1", xScale(xMin))
-                .attr("y1", yScale(yMin))
-                .attr("x2", xScale(xMax))
-                .attr("y2", yScale(yMax))
-                .attr("stroke", "crimson")
-                .attr("stroke-width", 4)
-                .attr("stroke-dasharray", "4 2");
-        });
+                .merge(line)
+                .transition()
+                .duration(300)
+                    .attr("x1", xScale(xMin))
+                    .attr("y1", yScale(yMin))
+                    .attr("x2", xScale(xMax))
+                    .attr("y2", yScale(yMax))
+                    .attr("stroke", "crimson")
+                    .attr("stroke-width", 4)
+                    .attr("stroke-dasharray", "4 2");
+
+            // Add R2    
+            svg.selectAll('.r2-label').data([r2])
+                .join('text')
+                .attr('class', 'r2-label')
+                .attr('text-anchor', 'end')
+                .attr('fill', '#555')
+                .style('font-size', '12px')
+                .transition()
+                    .duration(300)
+                    .attr('x', xScale(xMax) + 50) 
+                    .attr('y', yScale(yMax) + 10) 
+                    .text(`R² = ${r2.toFixed(2)}`);
+        }, 100));
     }
 }
