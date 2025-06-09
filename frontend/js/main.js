@@ -120,9 +120,16 @@ export class Survey {
     // Show current question, filters, and # of responses. Also list the filtered responses
     showSelected = () => {  
         if (!this.responses || !dc.facts) return;
-        
-        let filters = [];   
-        
+        this.showFilters();
+
+        dc.map.update();    
+        dc.redrawAll();
+        this.writeResponses(dc.facts.allFiltered());
+    }
+
+    showFilters() {
+        let filters = [];
+
         const state = dc.states.find(d => d.checked);
         filters.push(`${state ? state.name : "All states"}`);
 
@@ -130,21 +137,32 @@ export class Survey {
             chart.filters().forEach(filter => filters.push(filter));
         });
 
-        // Hide clear filters button if no filters
+        // Toggle clear filters button visibility
         const clearButton = document.getElementById("clear-filters");
         clearButton.style.display = filters.length > 0 ? "block" : "none";
 
         const responses = dc.facts.allFiltered().length;
         d3.select("#filters")
             .html(`
-                <span>Question: ${this.question}</span> &nbsp;
-                <span>${responses} responses</span> &nbsp;
-                <span>${filters.join(", ")}</span>
-            `);
-
-        dc.map.update();    
-        dc.redrawAll();
-        this.writeResponses(dc.facts.allFiltered());
+                <div class="filter-container">
+                    <div class="filter-header">
+                        <div class="question-section">
+                            <span class="question-label">Question:</span>
+                            <span class="question-text">${this.question}</span>
+                        </div>
+                        <div class="response-count">
+                            <span class="count-number">${responses}</span>
+                            <span class="count-label">responses</span>
+                        </div>
+                    </div>
+                    <div class="active-filters">
+                        <span class="filters-label">Filters:</span>
+                    <div class="filter-tags">
+                        ${filters.map(filter => `<span class="filter-tag">${filter}</span>`).join('')}
+                    </div>
+                </div>
+            </div>
+        `);
     }
 
     // Write a simple table of the filtered responses    
