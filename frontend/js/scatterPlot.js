@@ -1,4 +1,4 @@
-// Simple ScatterPlot component for numeric data
+// Wrapper for dc.js ScatterPlot
 export class ScatterPlot {
     constructor(xAttribute, yAttribute, title, config) {
         this.dim = config.facts.dimension(d => [+d[xAttribute], +d[yAttribute]]);
@@ -17,20 +17,14 @@ export class ScatterPlot {
         const xDomain = [xExtent[0] - xPadding, xExtent[1] + xPadding];
         const yDomain = [yExtent[0] - yPadding, yExtent[1] + yPadding];
         
-        // Add title
-        const container = d3.select("#" + xAttribute + "-plot");
+        const id = `#${xAttribute}-plot`
+        const container = d3.select(id);
         container.select('.chart-title').remove();
         container.insert('div', ':first-child')
             .attr('class', 'chart-title')
-            .style('text-align', 'center')
-            .style('font-size', '16px')
-            .style('font-weight', 'bold')
-            .style('margin-bottom', '10px')
-            .style('color', '#374151')
             .text(title);
         
-        // Create chart
-        this.chart = dc.scatterPlot("#" + xAttribute + "-plot")
+        this.chart = dc.scatterPlot(id)
             .dimension(this.dim)
             .group(this.group)
             .width(config.width)
@@ -49,47 +43,40 @@ export class ScatterPlot {
             .on('filtered', () => {
                 config.updateFunction();
             });
-            
-        // Add custom x-axis labels for categorical data
-        // const categoryLabels = this.getCategoryLabels(xAttribute);
-        // if (categoryLabels) {
-        //     this.chart.on('renderlet', (chart) => {
-        //         // Remove default tick labels
-        //         chart.select('.x.axis').selectAll('.tick text').remove();
-                
-        //         // Add custom labels
-        //         const xScale = chart.x();
-        //         Object.entries(categoryLabels).forEach(([value, label]) => {
-        //             chart.select('.x.axis')
-        //                 .append('text')
-        //                 .attr('x', xScale(+value))
-        //                 .attr('y', 15)
-        //                 .attr('text-anchor', 'middle')
-        //                 .style('font-size', '12px')
-        //                 .text(label);
-        //         });
-        //     });
-        // }
+                    
+        // Replace numeric tick labels
+        const labelMap = this.getLabelOverrides(xAttribute);
+        if (labelMap) {
+            const tickVals = Object.keys(labelMap).map(k => +k);
+            this.chart.xAxis().tickValues(tickVals);
+
+            this.chart.on('renderlet', chart => {
+                chart.selectAll('.x.axis .tick text')
+                    .text(d => labelMap[d.toFixed(1)] || d);
+            });
+        }
     }
-    
-    getCategoryLabels(attribute) {
-        const labelMappings = {
-            income_value: {
-                1: "Low",
-                2: "Lower-Middle", 
-                3: "Upper-Middle",
-                4: "High"
-            },
-            education_level_value: {
-                1: "High School",
-                2: "Some College",
-                3: "Associate Degree",
-                4: "Bachelor's Degree",
-                5: "Master's Degree",
-                6: "Doctorate"
-            }
-        };
-        
-        return labelMappings[attribute] || null;
+
+    // Ugh
+    getLabelOverrides(attribute) {
+        if (attribute === "income_value") {
+            return {
+                "1.0": "Low",
+                "2.0": "Lower-Middle",
+                "3.0": "Upper-Middle",
+                "4.0": "High"
+            };
+        }
+        if (attribute === "education_level_value") {
+            return {
+                "1.0": "High School",
+                "2.0": "Some College",
+                "3.0": "Assoc.",
+                "4.0": "BA",
+                "5.0": "MA",
+                "6.0": "PhD"
+            };
+        }
+        return null;
     }
 }

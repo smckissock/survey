@@ -1,6 +1,7 @@
 // Wrapper for dc.js BoxPlot
 export class BoxPlot {
-    constructor(attribute, measure, config) {
+    constructor(attribute, measure, title, config) {
+        
         this.dim = config.facts.dimension(dc.pluck(attribute));
 
         this.group = this.dim.group().reduce(
@@ -24,7 +25,14 @@ export class BoxPlot {
             () => ({ values: [] })
         );
 
-        this.chart = dc.boxPlot("#" + attribute + "-box-plot")
+        const id = `#${attribute}-box-plot`
+        const container = d3.select(id);
+        container.select('.chart-title').remove();
+        container.insert('div', ':first-child')
+            .attr('class', 'chart-title')
+            .text(title);
+
+        this.chart = dc.boxPlot(id)
             .dimension(this.dim)
             .group(this.group)
             .valueAccessor(d => d.value.values)  

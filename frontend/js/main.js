@@ -71,8 +71,8 @@ export class Survey {
                 width: 400,
                 updateFunction: this.showSelected.bind(this)
             };
-            new BoxPlot('gender', this.question, config);
-            new BoxPlot('state', this.question, config);
+            new BoxPlot('gender', this.question, `Gender vs ${this.question}`, config);
+            new BoxPlot('state', this.question, `State vs ${this.question}`, config);
         }
 
 
