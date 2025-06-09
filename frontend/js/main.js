@@ -10,7 +10,7 @@ export class Survey {
     }
 
     async init() {
-        const questions = await this.getQuestions();
+        const questions = ["q1_rating", "q2_rating", "q3_open", "q4_rating", "q5_open"];
         this.createQuestionButtons(questions);
         this.createOutputButtons(['Charts', "Responses"]);
 
@@ -22,19 +22,6 @@ export class Survey {
 
         this.question = questions[0];
         this.switchQuestion(this.question);
-    }
-
-    // Get a list of questions (strings) from the server 
-    async getQuestions() {
-        try {
-            const response = await fetch("/questions/list");
-            if (!response.ok) 
-                throw new Error(`Server error: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            console.error("Failed to fetch question list:", error);
-            return [];
-        }
     }
 
     // On start up or when a question button is clicked, get the responses for the question and display them
@@ -62,7 +49,7 @@ export class Survey {
     
             new ScatterPlot('age', this.question, `Age vs ${this.question}`, config);
             new ScatterPlot('income_value', this.question, `Income vs ${this.question}`, config);
-            new ScatterPlot('education_level_value', this.question, `Education Level vs ${this.question}`, config);
+            //new ScatterPlot('education_level_value', this.question, `Education Level vs ${this.question}`, config);
         };
 
         const addBoxPlots = () => {     
@@ -78,37 +65,45 @@ export class Survey {
 
         this.question = question;
         try {
-            const response = await fetch(`/questions/${encodeURIComponent(question)}`);
-            if (!response.ok) 
-                throw new Error(`Server error: ${response.status}`);
+            if (!dc.facts) {
+                this.responses = await d3.csv("/data/us_ai_survey_unique_50.csv");
+                dc.facts = crossfilter(this.responses);
             
-            this.responses = await response.json();
-            this.responses.forEach(d => {
-                d.count = 1;
-                // Add numeric mappings for categorical data
-                d.income_value = {
-                    "Low": 1,
-                    "Lower-Middle": 2, 
-                    "Upper-Middle": 3,
-                    "High": 4
-                }[d.income];
-        
-                d.education_level_value = {
-                    "High School": 1,
-                    "Some College": 2,
-                    "Associate Degree": 3,
-                    "Bachelor's Degree": 4,
-                    "Master's Degree": 5,
-                    "Doctorate": 6
-                }[d.education_level];
-            })
-            dc.facts = crossfilter(this.responses);
-            
+                this.responses.forEach(d => {
+                    d.count = 1;
+                    d.income_value = {
+                        "Low": 1,
+                        "Lower-Middle": 2, 
+                        "Upper-Middle": 3,
+                        "High": 4
+                    }[d.income];
+                    d.education_level_value = {
+                        "High School": 1,
+                        "Some College": 2,
+                        "Associate Degree": 3,
+                        "Bachelor's Degree": 4,
+                        "Master's Degree": 5,
+                        "Doctorate": 6
+                    }[d.education_level];
+                })
+            }
+                        
             addRowCharts();
-            addScatterPlots();
-            addBoxPlots();
             dc.map = new Map(d3.select('#map'), this.responses, dc.facts.dimension(dc.pluck('state')), this.showSelected);
 
+            const openQuestion = this.question.includes('open');
+            if (!openQuestion) {
+                addScatterPlots();
+                addBoxPlots();
+                this.switchOutput("Charts");
+            } else {
+                this.switchOutput("Responses");
+            }
+
+            // Charts don't make sense for open questions
+            d3.select('#Charts')
+                .style('display', !openQuestion ? 'inline-block' : 'none');
+            
             dc.renderAll();
             dc.filterAll();
             this.showSelected();           
@@ -118,7 +113,7 @@ export class Survey {
         }
     }
 
-    // Show current question, filters, and # of responses. Also list the filtred responses
+    // Show current question, filters, and # of responses. Also list the filtered responses
     showSelected = () => {  
         if (!this.responses || !dc.facts) return;
         
@@ -198,16 +193,17 @@ export class Survey {
         container.innerHTML = "";
 
         const highlightButton = (selectedName) => {
-            d3.selectAll('.question-button')
+            d3.selectAll('.tab-button')
                 .classed('active', function() {
                     return d3.select(this).text() === selectedName;
-                });
+            });
         };
 
         outputNames.forEach(name => {
             const button = document.createElement("button");
             button.textContent = name;
             button.className = "tab-button";
+            button.id = name;
             button.addEventListener("click", () => {
                 this.switchOutput(name);
                 highlightButton(name);

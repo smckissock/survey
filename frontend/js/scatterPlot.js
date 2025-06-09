@@ -143,7 +143,7 @@ export class ScatterPlot {
                 .attr("class", "trendline")
                 .merge(line)
                 .transition()
-                .duration(300)
+                .duration(400)
                     .attr("x1", xScale(xMin))
                     .attr("y1", yScale(yMin))
                     .attr("x2", xScale(xMax))
@@ -161,9 +161,9 @@ export class ScatterPlot {
                 .style('font-size', '12px')
                 .transition()
                     .duration(300)
-                    .attr('x', xScale(xMax) + 50) 
-                    .attr('y', yScale(yMax) + 10) 
-                    .text(`R² = ${r2.toFixed(2)}`);
+                    .attr('x', xScale(xMax) + 40) 
+                    .attr('y', 10) 
+                    .text(`R² = ${r2.toFixed(2)}`)
         }, 100));
     }
 }
