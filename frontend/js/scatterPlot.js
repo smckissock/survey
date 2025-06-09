@@ -55,6 +55,32 @@ export class ScatterPlot {
                     .text(d => labelMap[d.toFixed(1)] || d);
             });
         }
+
+        const { slope, intercept } = this.computeLinearFit(xValues, yValues);
+        this.chart.on('renderlet', chart => {
+        const svg = d3.select(`${id} svg`);
+        svg.selectAll('.trendline').remove(); // Clear old lines
+
+        const innerG = svg.select('g.chart-body');  // inner translated group
+
+        const xScale = chart.x();
+        const yScale = chart.y();
+
+        const xMin = xScale.domain()[0];
+        const xMax = xScale.domain()[1];
+        const yMin = slope * xMin + intercept;
+        const yMax = slope * xMax + intercept;
+
+        innerG.append("line")
+            .attr("class", "trendline")
+            .attr("x1", xScale(xMin))
+            .attr("y1", yScale(yMin))
+            .attr("x2", xScale(xMax))
+            .attr("y2", yScale(yMax))
+            .attr("stroke", "crimson")
+            .attr("stroke-width", 4)
+            .attr("stroke-dasharray", "4 2");
+        });
     }
 
     // Ugh
@@ -78,5 +104,16 @@ export class ScatterPlot {
             };
         }
         return null;
+    }
+
+    computeLinearFit(xValues, yValues) {
+        const n = xValues.length;
+        const xMean = d3.mean(xValues);
+        const yMean = d3.mean(yValues);
+        const covariance = d3.sum(xValues.map((x, i) => (x - xMean) * (yValues[i] - yMean)));
+        const variance = d3.sum(xValues.map(x => Math.pow(x - xMean, 2)));
+        const slope = covariance / variance;
+        const intercept = yMean - slope * xMean;
+        return { slope, intercept };
     }
 }
