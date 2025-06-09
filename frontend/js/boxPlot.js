@@ -1,43 +1,53 @@
-// Wrapper for dc.js boxPlot
+// Wrapper for dc.js BoxPlot
 export class BoxPlot {
-    constructor(attribute, config) {
+    constructor(attribute, measure, config) {
         this.dim = config.facts.dimension(dc.pluck(attribute));
+
         this.group = this.dim.group().reduce(
-            // Add function - return array directly
             (p, v) => {
-                const value = +v[attribute];
-                if (!isNaN(value)) 
-                    p.push(value);
-                return p;
-            },
-            // Remove function - work with array
-            (p, v) => {
-                const value = +v[attribute];
+                const value = +v[measure];
                 if (!isNaN(value)) {
-                    const index = p.indexOf(value);
-                    if (index > -1) 
-                        p.splice(index, 1);
-                    
+                    p.values.push(value);
                 }
                 return p;
             },
-            // Initialize function - return empty array
-            () => []
-        ); // Remove the extra closing parenthesis here
+            (p, v) => {
+                const value = +v[measure];
+                if (!isNaN(value)) {
+                    const index = p.values.indexOf(value);
+                    if (index > -1) {
+                        p.values.splice(index, 1);
+                    }
+                }
+                return p;
+            },
+            () => ({ values: [] })
+        );
 
-        dc.boxPlot("#" + attribute + "-box-plot")
+        this.chart = dc.boxPlot("#" + attribute + "-box-plot")
             .dimension(this.dim)
             .group(this.group)
+            .valueAccessor(d => d.value.values)  
             .width(config.width)
             .height(300)
             .margins({ top: 20, right: 20, bottom: 40, left: 40 })
-            //.elasticY(true)
             .colors(["#83b4db"])
             .boxPadding(0.8)
             .outerPadding(0.5)
             .on('filtered', () => {
-                config.updateFunction();
-            })
-            .yAxis().tickFormat(d3.format(".2f"));
+                if (typeof config.updateFunction === 'function') {
+                    config.updateFunction();
+                }
+            });
+
+        this.chart.yAxis().tickFormat(d3.format(".2f"));
+
+        // Warn if group values are not valid
+        this.chart.on('pretransition', () => {
+            const bad = this.group.all().filter(g => !Array.isArray(g.value?.values));
+            if (bad.length > 0) {
+                console.warn("Invalid boxplot group values:", bad);
+            }
+        });
     }
 }

@@ -60,9 +60,9 @@ export class Survey {
                 updateFunction: this.showSelected.bind(this)
             };
     
-            new ScatterPlot('age', 'q1_rating', 'Age vs Q1 Rating', config);
-            new ScatterPlot('income_value', 'q1_rating', 'Income vs Q1 Rating', config);
-            new ScatterPlot('education_level_value', 'q1_rating', 'Education vs Q1 Rating', config);
+            new ScatterPlot('age', this.question, `Age vs ${this.question}`, config);
+            new ScatterPlot('income_value', this.question, `Income vs ${this.question}`, config);
+            new ScatterPlot('education_level_value', this.question, `Education Level vs ${this.question}`, config);
         };
 
         const addBoxPlots = () => {     
@@ -71,8 +71,8 @@ export class Survey {
                 width: 400,
                 updateFunction: this.showSelected.bind(this)
             };
-            new BoxPlot('gender', config);
-            new BoxPlot('state', config);
+            new BoxPlot('gender', this.question, config);
+            new BoxPlot('state', this.question, config);
         }
 
 
@@ -113,16 +113,20 @@ export class Survey {
             dc.filterAll();
             this.showSelected();           
         } catch (error) {
-            console.error(`Failed to fetch responses for ${question}:`, error);
-            return [];
+            console.error(`Error in SwitchQuestion: ${question}:`, error);
+            return [];  
         }
     }
 
     // Show current question, filters, and # of responses. Also list the filtred responses
-    showSelected = () => {
+    showSelected = () => {  
         if (!this.responses || !dc.facts) return;
         
-        let filters = [];        
+        let filters = [];   
+        
+        const state = dc.states.find(d => d.checked);
+        filters.push(`${state ? state.name : "All states"}`);
+
         dc.chartRegistry.list().forEach(chart => {
             chart.filters().forEach(filter => filters.push(filter));
         });
