@@ -1,5 +1,5 @@
 :root {
-    --title-height: 60px;  
+    --title-height: 65px;  
     --button-height: 30px;  
     --map-height: 320px;  
     --chart-1-width: 200px;
@@ -17,7 +17,7 @@ body {
         "chart-1                chart-2                    tab-content";
     grid-template-columns: var(--chart-1-width) var(--chart-2-width) 1fr;
     grid-template-rows: var(--title-height) var(--button-height) var(--map-height) 1fr;
-    gap: 10px 20px;
+    gap: 10px 30px;
     margin: 3px;
     height: 100vh; 
     width: calc(100vw - 1.1rem);   
@@ -28,7 +28,7 @@ body {
     grid-area: title;  
     font-size: 36px;
     font-weight: 700; 
-    padding-top: 5px;
+    padding-top: 10px;
     padding-left: 5px;
 }
 

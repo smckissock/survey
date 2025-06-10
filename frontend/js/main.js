@@ -34,9 +34,18 @@ export class Survey {
                 width: 200,
                 updateFunction: this.showSelected
             };
-            const chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
-            chartFields.forEach(field => {
-                new RowChart(field, config);
+            //onst chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
+            const rowCharts = [
+                { id: "gender", name: "Gender" },
+                { id: "education_level", name: "Education Level" },
+                { id: "sentiment_label", name: "Sentiment" },
+                { id: "income", name: "Income" },
+                { id: "age", name: "Age" },
+                { id: "city", name: "City" }
+            ];
+
+            rowCharts.forEach(chart => {
+                new RowChart(chart.id, chart.name, config);
             });
         }
 
@@ -68,7 +77,7 @@ export class Survey {
         d3.selectAll(".dc-chart").html("");
         try {
             if (!dc.facts) {
-                this.responses = await d3.csv("/data/us_ai_survey_unique_50.csv");
+                this.responses = await d3.csv("/frontend/data/us_ai_survey_unique_50.csv");
                 dc.facts = crossfilter(this.responses);
             
                 this.responses.forEach(d => {

@@ -1,7 +1,14 @@
 
 // Wrapper of dc.js rowChart
 export class RowChart {
-    constructor(attribute, config) {
+    constructor(attribute, title, config) {
+        const id = `#${attribute}`
+        const container = d3.select(id);
+        container.select('.chart-title').remove();
+        container.insert('div', ':first-child')
+            .attr('class', 'chart-title')
+            .text(title);
+        
         this.dim = config.facts.dimension(dc.pluck(attribute));
         this.group = this.dim.group().reduceSum(dc.pluck("count"));
         
