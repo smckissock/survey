@@ -34,7 +34,6 @@ export class Survey {
                 width: 200,
                 updateFunction: this.showSelected
             };
-            //onst chartFields = ["gender", "education_level", "sentiment_label", "income", "age", "city"];
             const rowCharts = [
                 { id: "gender", name: "Gender" },
                 { id: "education_level", name: "Education Level" },
