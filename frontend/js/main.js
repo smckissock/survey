@@ -76,7 +76,7 @@ export class Survey {
         d3.selectAll(".dc-chart").html("");
         try {
             if (!dc.facts) {
-                this.responses = await d3.csv("/frontend/data/us_ai_survey_unique_50.csv");
+                this.responses = await d3.csv("./frontend/data/us_ai_survey_unique_50.csv");
                 dc.facts = crossfilter(this.responses);
             
                 this.responses.forEach(d => {
