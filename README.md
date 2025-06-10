@@ -1,6 +1,6 @@
 # Survey Data App
 
-![Survey App Screenshot](images/screenshot.jpg)
+![Survey App Screenshot](images/surveys.gif)
 
 #### 1. Backend API
 - SqlModel for an ORM because it works well with FastApi

@@ -15,9 +15,7 @@ export class Survey {
         this.createOutputButtons(["Charts", "Responses"]);
 
         document.getElementById("clear-filters").addEventListener("click", () => {
-            dc.filterAll();
-            dc.redrawAll();
-            this.showSelected()
+            this.switchQuestion(this.question);
         });
 
         this.question = questions[0];
@@ -58,7 +56,7 @@ export class Survey {
     
             new ScatterPlot("age", this.question, `Age vs ${this.question}`, config);
             new ScatterPlot("income_value", this.question, `Income vs ${this.question}`, config);
-            //new ScatterPlot("education_level_value", this.question, `Education Level vs ${this.question}`, config);
+            new ScatterPlot("education_level_value", this.question, `Education Level vs ${this.question}`, config);
         };
 
         const addBoxPlots = () => {     
@@ -72,8 +70,12 @@ export class Survey {
         }        
         
         this.setLoading(true);
+
+        // Clear existing charts and map - important
         dc.chartRegistry.clear();
         d3.selectAll(".dc-chart").html("");
+        d3.select("#map").html("");
+
         try {
             if (!dc.facts) {
                 this.responses = await d3.csv("./frontend/data/us_ai_survey_unique_50.csv");
@@ -101,6 +103,7 @@ export class Survey {
             addRowCharts();
             dc.map = new Map(d3.select("#map"), this.responses, dc.facts.dimension(dc.pluck("state")), this.showSelected);
 
+            // No charts for open questions - no numeric answer to plot against
             const openQuestion = this.question.includes("open");
             if (!openQuestion) {
                 addScatterPlots();
@@ -145,10 +148,11 @@ export class Survey {
             chart.filters().forEach(filter => filters.push(filter));
         });
 
-        // Toggle clear filters button visibility
+        // Don't show clear filters button if no filters 
+        const hasFilters = filters.length > 0 && filters.some(f => f !== "All states");
         const clearButton = document.getElementById("clear-filters");
-        clearButton.style.display = filters.length > 0 ? "block" : "none";
-
+        clearButton.classList.toggle("hidden", !hasFilters);
+        
         const responses = dc.facts.allFiltered().length;
         d3.select("#filters")
             .html(`

@@ -64,6 +64,13 @@ export class Map {
 
 
     constructor(div, responses, dim, refresh) {
+        if (dc.stateDimension) {
+            dc.stateDimension.filterAll();
+            dc.states.forEach(state => {
+                state.checked = false;
+            });
+        }
+
         self = this;
         self.div = div;
         self.responses = responses;
@@ -77,6 +84,7 @@ export class Map {
             state.checked = false;
         });
         dc.states = self.states;
+        dc.stateDimension = self.dim;
         self.show();
     }
 
