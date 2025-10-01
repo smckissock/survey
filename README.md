@@ -1,9 +1,11 @@
 # Survey Data App
 
-![Survey App Screenshot](images/surveys.gif)
+Questions and answers mean nothing! This is for prototyping UI interactions and rendering for any survey data. 
 
-#### 1. Backend API
-- SqlModel for an ORM because it works well with FastApi
+### [Live link](https://smckissock.github.io/survey/)  
+
+
+#### 1. Backend API- SqlModel for an ORM because it works well with FastApi
 - SQLite for ease of configuration, but usually I would use postgresql
 - pyproject.toml for dev and prod requirements, etc
 - I didn't setup up tests, black, mypy etc, but orginarily they would be run in pre-commit
@@ -15,8 +17,8 @@
 - vanilla js with d3.js and dc.js for filtering the data. Crossfilter.js for in-browser analytics
 - Minimal css with no framework 
 - This approach works with as many as 100k-300k records in the browser
-- dc.js has charts that allow users to brush over date or time fields, and you can create your own custon charts that use filtered data
-- Many other visualization and interaction options with dc.js  
+- crossfilter.js used for in-browser data management
+- dc.js used for row charts, custom crossfilter charts for states, and scatter with best fit line 
 ### 3. Infrastructure
 - Very basic setup, no postgresql
 - For now, no precommit hooks to assure code quality, and no github actions for deployment, but those would be needed
